@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
   // command line arguments collection
   bool show_pid = false, sort = false, version = false;
   int opt;
-  while (opt = getopt(argc, argv, "pnV") != -1) {
+  while ((opt = getopt(argc, argv, "pnV")) != -1) {
     switch (opt) {
       case 'p':
         show_pid = true;
