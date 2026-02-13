@@ -19,6 +19,10 @@ typedef struct process_info {
   struct process_info** child_threads; // pointer to the child threads array 
 } process_info;
 
+bool is_digit(char ch) {
+  return ch >= '0' && ch <= '9';
+}
+
 int main(int argc, char *argv[]) {
   for (int i = 0; i < argc; i++) {
     assert(argv[i]);
@@ -67,7 +71,7 @@ int main(int argc, char *argv[]) {
   while ((entry = readdir(dir)) != NULL) {
     // Check if the entry is a directory and not "." or ".."
     if (entry->d_type == DT_DIR) {
-      if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+      if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && is_digit(entry->d_name[0])) {
         printf("%s\n", entry->d_name);
       }
     }
