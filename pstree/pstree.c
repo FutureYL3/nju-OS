@@ -50,6 +50,8 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "pstree (for NJU-OS) 1.0\nCopyright (C) 2026 yl\n");
     exit(EXIT_SUCCESS);
   }
+  if (show_pid);
+  if (sort);
   // collect process info
   DIR *dir;
   struct dirent *entry;
@@ -65,9 +67,9 @@ int main(int argc, char *argv[]) {
   while ((entry = readdir(dir)) != NULL) {
     // Check if the entry is a directory and not "." or ".."
     if (entry->d_type == DT_DIR) {
-        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
-          printf("%s\n", entry->d_name);
-        }
+      if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+        printf("%s\n", entry->d_name);
+      }
     }
   }
 
