@@ -26,7 +26,7 @@ void printf_without_pid(int depth, char *name) {
 }
 
 FILE* get_process_status(pid_t pid) {
-  char path[1024];
+  char path[256];
   snprintf(path, sizeof(path), "%s/%d/%s", "/proc", (int)pid, "status");
   FILE* file;
   file = fopen(path, "r");
@@ -73,10 +73,10 @@ void print_children_process(int *depth, pid_t pid, bool show_pid, bool sort) {
   int child_pid;
   while (fscanf(children, "%d", &child_pid) == 1) {
     // start recursion
-    *depth++;
+    (*depth)++;
     print_children_process(depth, child_pid, show_pid, sort);
   }
-  *depth--;
+  (*depth)--;
 }
 
 int main(int argc, char *argv[]) {
