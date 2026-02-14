@@ -111,6 +111,7 @@ void print_children_process(int *depth, pid_t pid, bool show_pid, bool sort) {
     for (int i = 0; i < children_count; ++i) {
       print_children_process(depth, children_pids[i], show_pid, sort);
     }
+    free(children_pids);
   }
   
   (*depth)--;
