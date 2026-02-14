@@ -11,6 +11,13 @@
 #include <dirent.h>
 #include <string.h>
 
+int compare_pids(const void *a, const void *b) {
+  pid_t pid_a = *(const pid_t *)a;
+  pid_t pid_b = *(const pid_t *)b;
+
+  return (int)(pid_a - pid_b);
+}
+
 void printf_with_pid(int depth, char *name, pid_t pid) {
   for (int i = 0; i < depth; ++i) {
     fprintf(stdout, "  ");
@@ -78,15 +85,34 @@ void print_children_process(int *depth, pid_t pid, bool show_pid, bool sort) {
   }
   int child_pid;
   int children_count = 0;
-  while (fscanf(children, "%d", &child_pid) == 1) {
-    // start recursion
-    (*depth)++;
-    if (!sort)  print_children_process(depth, (pid_t)child_pid, show_pid, sort);
-    else {
-      children_count++;
+  if (!sort) {
+    while (fscanf(children, "%d", &child_pid) == 1) {
+      // start recursion
+      (*depth)++;
+      print_children_process(depth, (pid_t)child_pid, show_pid, sort);
     }
   }
-
+  else {
+    // get children count
+    while (fscanf(children, "%d", &child_pid) == 1) {
+      children_count++;
+    }
+    pid_t *children_pids = (pid_t*)malloc(sizeof(pid_t) * children_count);
+    rewind(children);
+    // collect children pid
+    for (int i = 0; i < children_count; ++i) {
+      fscanf(children, "%d", &child_pid);
+      children_pids[i] = child_pid;
+    }
+    // sort children by pid
+    qsort(children, children_count, sizeof(pid_t), compare_pids);
+    // recursively print child process
+    (*depth)++;
+    for (int i = 0; i < children_count; ++i) {
+      print_children_process(depth, children_pids[i], show_pid, sort);
+    }
+  }
+  
   (*depth)--;
 }
 
