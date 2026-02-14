@@ -11,6 +11,7 @@
 #include <dirent.h>
 #include <string.h>
 
+// qsort helper function
 int compare_pids(const void *a, const void *b) {
   pid_t pid_a = *(const pid_t *)a;
   pid_t pid_b = *(const pid_t *)b;
@@ -97,21 +98,24 @@ void print_children_process(int *depth, pid_t pid, bool show_pid, bool sort) {
     while (fscanf(children, "%d", &child_pid) == 1) {
       children_count++;
     }
-    pid_t *children_pids = (pid_t*)malloc(sizeof(pid_t) * children_count);
-    rewind(children);
-    // collect children pids
-    for (int i = 0; i < children_count; ++i) {
-      fscanf(children, "%d", &child_pid);
-      children_pids[i] = child_pid;
+    if (children_count > 0) {
+      pid_t *children_pids = (pid_t*)malloc(sizeof(pid_t) * children_count);
+      rewind(children);
+      // collect children pids
+      /* We will have a race condition if this process's children count changes during this time, needs using lock, we ignore here */
+      for (int i = 0; i < children_count; ++i) {
+        fscanf(children, "%d", &child_pid);
+        children_pids[i] = child_pid;
+      }
+      // sort children by pid
+      qsort(children_pids, children_count, sizeof(pid_t), compare_pids);
+      // recursively print child process
+      (*depth)++;
+      for (int i = 0; i < children_count; ++i) {
+        print_children_process(depth, children_pids[i], show_pid, sort);
+      }
+      free(children_pids);
     }
-    // sort children by pid
-    qsort(children_pids, children_count, sizeof(pid_t), compare_pids);
-    // recursively print child process
-    (*depth)++;
-    for (int i = 0; i < children_count; ++i) {
-      print_children_process(depth, children_pids[i], show_pid, sort);
-    }
-    free(children_pids);
   }
   
   fclose(children);
