@@ -11,22 +11,74 @@
 #include <dirent.h>
 #include <string.h>
 
-typedef struct process_info {
-  char* name;
-  pid_t pid;
-  pid_t ppid;
-  int child_thread_num;
-  struct process_info** child_threads; // pointer to the child threads array 
-} process_info;
+void printf_with_pid(int depth, char *name, pid_t pid) {
+  for (int i = 0; i < depth; ++i) {
+    fprintf(stdout, "  ");
+  }
+  fprintf(stdout, "%s(%d)\n", name, (int)pid);
+}
 
-bool is_digit(char ch) {
-  return ch >= '0' && ch <= '9';
+void printf_without_pid(int depth, char *name) {
+  for (int i = 0; i < depth; ++i) {
+    fprintf(stdout, "  ");
+  }
+  fprintf(stdout, "%s\n", name);
+}
+
+FILE* get_process_status(pid_t pid) {
+  char path[1024];
+  snprintf(path, sizeof(path), "%s/%d/%s", "/proc", (int)pid, "status");
+  FILE* file;
+  file = fopen(path, "r");
+  if (file == NULL) {
+    perror("cannot open status file");
+    exit(EXIT_SUCCESS);
+  }
+  return file;
+}
+
+char* get_process_name(pid_t pid) {
+  FILE* file = get_process_status(pid);
+  char line[256];
+  char temp_name[256];
+  char *name;
+  while (fgets(line, sizeof(line), file)) {
+    if (strncmp(line, "Name:", 5) == 0) {
+      if (sscanf(line, "Name: %s", temp_name) == 1) {
+        name = strdup(temp_name);
+        break;
+      }
+    } 
+  }
+  fclose(file); 
+  return name;
+}
+
+void print_children_process(int *depth, pid_t pid, bool show_pid, bool sort) {
+  char *name = get_process_name(pid);
+  if (show_pid) printf_with_pid(*depth, name, pid);
+  else          printf_without_pid(*depth, name);
+
+  char children_path[256];
+  snprintf(children_path, sizeof(children_path), "%s/%d/%s/%s/%s", "/proc", (int)pid, "task", (int)pid, "children");
+  FILE* children;
+  children = fopen(children_path, "r");
+  if (children == NULL) {
+    perror("fopen");
+    exit(EXIT_FAILURE);
+  }
+  int child_pid;
+  while (fscanf(children, "%d", &child_pid) == 1) {
+    // start recursion
+    *depth++;
+    print_children_process(&depth, child_pid, show_pid, sort);
+  }
+  *depth--;
 }
 
 int main(int argc, char *argv[]) {
   for (int i = 0; i < argc; i++) {
     assert(argv[i]);
-    printf("argv[%d] = %s\n", i, argv[i]);
   }
   assert(!argv[argc]);
 
@@ -49,35 +101,16 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
   }
+
   // if only print version, just print it and early return
   if (version) {
-    fprintf(stderr, "pstree (for NJU-OS) 1.0\nCopyright (C) 2026 yl\n");
+    fprintf(stderr, "pstree (for NJU-OS) 1.0\nCopyright (C) 2026 yl33\n");
     exit(EXIT_SUCCESS);
   }
-  if (show_pid);
-  if (sort);
-  // collect process info
-  DIR *dir;
-  struct dirent *entry;
 
-  // Open the directory
-  dir = opendir("/proc");
-  if (dir == NULL) {
-    perror("opendir");
-    exit(EXIT_FAILURE);
-  }
+  // recursively print child process, start from pid 1
+  int depth = 0;
+  print_children_process(&depth, 1, show_pid, sort);
 
-  // Read directory entries
-  while ((entry = readdir(dir)) != NULL) {
-    // Check if the entry is a directory and not "." or ".."
-    if (entry->d_type == DT_DIR) {
-      if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && is_digit(entry->d_name[0])) {
-        printf("%s\n", entry->d_name);
-      }
-    }
-  }
-
-  // Close the directory
-  closedir(dir);
   return 0;
 }
