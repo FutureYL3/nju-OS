@@ -41,7 +41,7 @@ char* get_process_name(pid_t pid) {
   FILE* file = get_process_status(pid);
   char line[256];
   char temp_name[256];
-  char *name;
+  char *name = NULL;
   while (fgets(line, sizeof(line), file)) {
     if (strncmp(line, "Name:", 5) == 0) {
       if (sscanf(line, "Name: %s", temp_name) == 1) {
@@ -56,11 +56,14 @@ char* get_process_name(pid_t pid) {
 
 void print_children_process(int *depth, pid_t pid, bool show_pid, bool sort) {
   char *name = get_process_name(pid);
-  if (show_pid) printf_with_pid(*depth, name, pid);
-  else          printf_without_pid(*depth, name);
-
+  if (name != NULL) {
+    if (show_pid) printf_with_pid(*depth, name, pid);
+    else          printf_without_pid(*depth, name);
+  }
+  else  exit(EXIT_FAILURE);
+  
   char children_path[256];
-  snprintf(children_path, sizeof(children_path), "%s/%d/%s/%s/%s", "/proc", (int)pid, "task", (int)pid, "children");
+  snprintf(children_path, sizeof(children_path), "%s/%d/%s/%d/%s", "/proc", (int)pid, "task", (int)pid, "children");
   FILE* children;
   children = fopen(children_path, "r");
   if (children == NULL) {
@@ -71,7 +74,7 @@ void print_children_process(int *depth, pid_t pid, bool show_pid, bool sort) {
   while (fscanf(children, "%d", &child_pid) == 1) {
     // start recursion
     *depth++;
-    print_children_process(&depth, child_pid, show_pid, sort);
+    print_children_process(depth, child_pid, show_pid, sort);
   }
   *depth--;
 }
