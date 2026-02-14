@@ -66,15 +66,18 @@ char* get_process_name(pid_t pid) {
 }
 
 void print_children_process(int *depth, pid_t pid, bool show_pid, bool sort) {
+  // print this process
   char *name = get_process_name(pid);
   if (name != NULL) {
     if (show_pid) printf_with_pid(*depth, name, pid);
     else          printf_without_pid(*depth, name);
 
     free(name);
+    (*depth)++;
   }
   else  /* exit(EXIT_FAILURE); */ return;
   
+  // print children
   char children_path[256];
   snprintf(children_path, sizeof(children_path), "%s/%d/%s/%d/%s", "/proc", (int)pid, "task", (int)pid, "children");
   FILE* children;
@@ -87,7 +90,6 @@ void print_children_process(int *depth, pid_t pid, bool show_pid, bool sort) {
   int child_pid;
   int children_count = 0;
   if (!sort) {
-    (*depth)++;
     while (fscanf(children, "%d", &child_pid) == 1) {
       // start recursion
       print_children_process(depth, (pid_t)child_pid, show_pid, sort);
@@ -110,7 +112,6 @@ void print_children_process(int *depth, pid_t pid, bool show_pid, bool sort) {
       // sort children by pid
       qsort(children_pids, children_count, sizeof(pid_t), compare_pids);
       // recursively print child process
-      (*depth)++;
       for (int i = 0; i < children_count; ++i) {
         print_children_process(depth, children_pids[i], show_pid, sort);
       }
