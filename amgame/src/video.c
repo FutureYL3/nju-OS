@@ -35,6 +35,7 @@ void splash() {
 }
 
 void screen_update(struct ball ball) {
+  printf("[screen update] start screen update\n");
   if (!initilized) {
     init();
     initilized = true;
