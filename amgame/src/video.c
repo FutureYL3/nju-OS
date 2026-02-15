@@ -2,6 +2,7 @@
 
 #define SIDE 16
 static int w, h;
+static bool initilized = false;
 
 static void init() {
   AM_GPU_CONFIG_T info = {0};
@@ -31,4 +32,22 @@ void splash() {
       }
     }
   }
+}
+
+void screen_update(struct ball ball) {
+  if (!initilized) {
+    init();
+    initilized = true;
+  }
+
+  uint32_t pixels[ball.width * ball.height];
+  AM_GPU_FBDRAW_T event = {
+    .x = ball.x, .y = ball.y, .w = w, .h = h, .sync = 1,
+    .pixels = pixels,
+  };
+  for (int i = 0; i < ball.width * ball.height; ++ i) {
+    pixels[i] = 0xffffff; // white ball
+  }
+
+  ioe_write(AM_GPU_FBDRAW, &event);
 }
