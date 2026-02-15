@@ -40,9 +40,21 @@ void screen_update(struct ball ball) {
     initilized = true;
   }
 
+  // clear the screen
+  uint32_t background[w * h];
+  for (int i = 0; i < w * h; i++)
+    background[i] = 0x000000; // black
+
+  AM_GPU_FBDRAW_T clear_event = {
+    .x = 0, .y = 0, .w = w, .h = h, .sync = 0,
+    .pixels = background,
+  };
+  ioe_write(AM_GPU_FBDRAW, &clear_event);
+
+  // draw the ball
   uint32_t pixels[ball.width * ball.height];
   AM_GPU_FBDRAW_T event = {
-    .x = ball.x, .y = ball.y, .w = w, .h = h, .sync = 1,
+    .x = ball.x, .y = ball.y, .w = ball.width, .h = ball.height, .sync = 1,
     .pixels = pixels,
   };
   for (int i = 0; i < ball.width * ball.height; ++ i) {
