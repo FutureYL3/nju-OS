@@ -38,15 +38,17 @@ void screen_update(struct ball ball) {
   printf("[screen update] start screen update\n");
   if (!initilized) {
     init();
+    for (int x = 0; x * SIDE < w; x ++) {
+      for (int y = 0; y * SIDE < h; y ++) {
+        draw_tile(x * SIDE, y * SIDE, SIDE, SIDE, 0x000000, 0); // white
+      }
+    }
     initilized = true;
   }
 
-  // clear the screen
-  for (int x = 0; x * SIDE < w; x ++) {
-    for (int y = 0; y * SIDE < h; y ++) {
-      draw_tile(x * SIDE, y * SIDE, SIDE, SIDE, 0x000000, 0); // white
-    }
-  }
+  // clear the screen using dirty rectangle erase
+  if (ball.last_x != -1 && ball.last_y != -1)
+    draw_tile(ball.last_x, ball.last_y, ball.width, ball.height, 0x000000, 0);
 
   // draw the ball
   draw_tile(ball.x, ball.y, ball.width, ball.height, 0xffffff, 1);

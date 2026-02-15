@@ -2,7 +2,11 @@
 
 static int w, h;
 
-struct ball ball = { .v_x = 0, .v_y = 0, .width = 16, .height = 16 }; // width and height adapt to draw_tile function
+struct ball ball = { 
+  .v_x = 0, .v_y = 0, 
+  .width = 16, .height = 16, 
+  .last_x = -1, .last_y = -1 
+}; // width and height adapt to draw_tile function
 
 static void init() {
   AM_GPU_CONFIG_T info = {0};
@@ -18,16 +22,16 @@ void kbd_event(int key) {
   printf("[kdb_event] get key: %d\n", key);
   switch (key) {
     case AM_KEY_W:
-      ball.v_y += 60;
-      break;
-    case AM_KEY_S:
       ball.v_y -= 60;
       break;
+    case AM_KEY_S:
+      ball.v_y += 60;
+      break;
     case AM_KEY_A:
-      ball.v_x -= 60;
+      ball.v_x += 60;
       break;
     case AM_KEY_D:
-      ball.v_x += 60;
+      ball.v_x -= 60;
       break;
     case AM_KEY_ESCAPE:
       halt(0);
@@ -35,6 +39,10 @@ void kbd_event(int key) {
 }
 
 void game_progress() {
+  // record last x and y
+  ball.last_x = ball.x;
+  ball.last_y = ball.y;
+
   // update speed
   ball.x += ball.v_x / FPS;
   ball.y += ball.v_y / FPS;

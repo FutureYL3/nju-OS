@@ -9,7 +9,7 @@
 #define FPS 60
 
 struct ball {
-  int x, y, v_x, v_y, width, height;
+  int x, y, v_x, v_y, width, height, last_x, last_y;
 };
 
 extern struct ball ball;
