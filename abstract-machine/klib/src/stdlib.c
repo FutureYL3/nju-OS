@@ -34,9 +34,22 @@ void *malloc(size_t size) {
   // Therefore do not call panic() here, else it will yield a dead recursion:
   //   panic() -> putchar() -> (glibc) -> malloc() -> panic()
 #if !(defined(__ISA_NATIVE__) && defined(__NATIVE_USE_KLIB__))
-  panic("Not implemented");
+	if (size == 0)  return NULL;
+	static char *addr = NULL;
+
+	if (addr == NULL)  addr = (char *) (heap.start);
+
+	void *next_addr = (void *) ROUNDUP(addr, 4);
+
+	if ((char *) next_addr + size > (char *) heap.end) {
+		panic("No more space can be allocated on heap");
+	}
+
+	void *ret = next_addr;
+	addr = (char *) next_addr + size;
+	return ret;
 #endif
-  return NULL;
+	panic("Not implemented");	
 }
 
 void free(void *ptr) {
