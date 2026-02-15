@@ -2,7 +2,7 @@
 
 static int w, h;
 
-struct ball ball = { .x =0, .y = 0, .v_x = 0, .v_y = 0, .width = 10, .height = 10 };
+struct ball ball = { .x =0, .y = 0, .v_x = 0, .v_y = 0, .width = 50, .height = 50 };
 
 static void init() {
   AM_GPU_CONFIG_T info = {0};
@@ -13,17 +13,17 @@ static void init() {
 
 void kbd_event(int key) {
   switch (key) {
-    case AM_KEY_UP:
-      ball.v_y += 1;
+    case AM_KEY_W:
+      ball.v_y += 60;
       break;
-    case AM_KEY_DOWN:
-      ball.v_y -= 1;
+    case AM_KEY_S:
+      ball.v_y -= 60;
       break;
-    case AM_KEY_LEFT:
-      ball.v_x -= 1;
+    case AM_KEY_A:
+      ball.v_x -= 60;
       break;
-    case AM_KEY_RIGHT:
-      ball.v_x += 1;
+    case AM_KEY_D:
+      ball.v_x += 60;
       break;
     case AM_KEY_ESCAPE:
       halt(0);
