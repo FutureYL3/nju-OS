@@ -46,7 +46,7 @@ void screen_update(struct ball ball) {
     background[i] = 0x000000; // black
 
   AM_GPU_FBDRAW_T clear_event = {
-    .x = 0, .y = 0, .w = w, .h = h, .sync = 0,
+    .x = 0, .y = 0, .w = w, .h = h, .sync = 1,
     .pixels = background,
   };
   ioe_write(AM_GPU_FBDRAW, &clear_event);
