@@ -62,4 +62,6 @@ void screen_update(struct ball ball) {
   }
 
   ioe_write(AM_GPU_FBDRAW, &event);
+
+  printf("[screen update] screen updated\n");
 }

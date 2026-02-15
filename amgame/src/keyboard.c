@@ -21,6 +21,8 @@ int readkey() {
   AM_INPUT_KEYBRD_T event = { .keycode = AM_KEY_NONE };
   ioe_read(AM_INPUT_KEYBRD, &event);
 
+  printf("[readkey] read key: %d\n", event.keycode);
+
   if (event.keycode != AM_KEY_NONE && event.keydown)
     return event.keycode;
   else
