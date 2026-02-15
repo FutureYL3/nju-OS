@@ -2,13 +2,16 @@
 
 static int w, h;
 
-struct ball ball = { .x =0, .y = 0, .v_x = 0, .v_y = 0, .width = 50, .height = 50 };
+struct ball ball = { .v_x = 0, .v_y = 0, .width = 50, .height = 50 };
 
 static void init() {
   AM_GPU_CONFIG_T info = {0};
   ioe_read(AM_GPU_CONFIG, &info);
   w = info.width;
   h = info.height;
+
+  ball.x = w / 2;
+  ball.y = h / 2;
 }
 
 void kbd_event(int key) {
