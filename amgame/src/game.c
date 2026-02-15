@@ -2,7 +2,7 @@
 
 static int w, h;
 
-struct ball ball = { .v_x = 0, .v_y = 0, .width = 50, .height = 50 };
+struct ball ball = { .v_x = 0, .v_y = 0, .width = 16, .height = 16 }; // width and height adapt to draw_tile function
 
 static void init() {
   AM_GPU_CONFIG_T info = {0};

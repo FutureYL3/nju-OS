@@ -43,22 +43,13 @@ void screen_update(struct ball ball) {
 
   // clear the screen
   for (int x = 0; x * SIDE < w; x ++) {
-    for (int y = 0; y * SIDE < h; y++) {
+    for (int y = 0; y * SIDE < h; y ++) {
       draw_tile(x * SIDE, y * SIDE, SIDE, SIDE, 0x000000, 0); // white
     }
   }
 
   // draw the ball
-  uint32_t pixels[ball.width * ball.height];
-  AM_GPU_FBDRAW_T event = {
-    .x = ball.x, .y = ball.y, .w = ball.width, .h = ball.height, .sync = 1,
-    .pixels = pixels,
-  };
-  for (int i = 0; i < ball.width * ball.height; ++ i) {
-    pixels[i] = 0xffffff; // white ball
-  }
-
-  ioe_write(AM_GPU_FBDRAW, &event);
+  draw_tile(ball.x, ball.y, ball.width, ball.height, 0xffffff, 1);
 
   printf("[screen update] screen updated\n");
 }
