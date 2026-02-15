@@ -19,7 +19,7 @@ static void init() {
 }
 
 void kbd_event(int key) {
-  printf("[kdb_event] get key: %d\n", key);
+  // printf("[kdb_event] get key: %d\n", key);
   switch (key) {
     case AM_KEY_W:
       ball.v_y -= 60;
@@ -28,10 +28,10 @@ void kbd_event(int key) {
       ball.v_y += 60;
       break;
     case AM_KEY_A:
-      ball.v_x += 60;
+      ball.v_x -= 60;
       break;
     case AM_KEY_D:
-      ball.v_x -= 60;
+      ball.v_x += 60;
       break;
     case AM_KEY_ESCAPE:
       halt(0);
@@ -65,7 +65,7 @@ void game_progress() {
     ball.v_y = -ball.v_y;
   }
 
-  printf("[game progress] ball info: x: %d, y: %d, v_x: %d, v_y: %d\n", ball.x, ball.y, ball.v_x, ball.v_y);
+  // printf("[game progress] ball info: x: %d, y: %d, v_x: %d, v_y: %d\n", ball.x, ball.y, ball.v_x, ball.v_y);
 }
 
 // Operating system is a C program!

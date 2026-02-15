@@ -35,7 +35,7 @@ void splash() {
 }
 
 void screen_update(struct ball ball) {
-  printf("[screen update] start screen update\n");
+  // printf("[screen update] start screen update\n");
   if (!initilized) {
     init();
     for (int x = 0; x * SIDE < w; x ++) {
@@ -53,5 +53,5 @@ void screen_update(struct ball ball) {
   // draw the ball
   draw_tile(ball.x, ball.y, ball.width, ball.height, 0xffffff, 1);
 
-  printf("[screen update] screen updated\n");
+  // printf("[screen update] screen updated\n");
 }
