@@ -120,7 +120,7 @@ void co_yield() {
       if (co != NULL) {
         // selectable co status are NEW, RUNNING and WAITING
         if (co->status == CO_NEW) {
-          last_pos = i;
+          last_pos = idx;
           current_co = co;
           current_co->status = CO_RUNNING;
 
@@ -129,7 +129,7 @@ void co_yield() {
           stack_switch_call((void *)stack_top, co_entry_wrapper, (uintptr_t)co);
         }
         if (co->status == CO_RUNNING) {
-          last_pos = i;
+          last_pos = idx;
           current_co = co;
           longjmp(co->context, 1);
         }
