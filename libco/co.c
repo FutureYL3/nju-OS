@@ -40,14 +40,25 @@ struct co {
   uint8_t        stack[STACK_SIZE]; // 协程的堆栈
 };
 
-int cur_co_count = 0;
 struct co* co_list[MAX_CO_NUM];
 struct co* current_co;
 
 void co_exit() {
   current_co->status = CO_DEAD;
 
+  if (current_co->waiter != NULL)
+    current_co->waiter->status = CO_RUNNING;
+
   co_yield();
+}
+
+static void remove_co_from_list(struct co *target) {
+  for (int i = 0; i < MAX_CO_NUM; ++ i) {
+    if (co_list[i] == target) {
+      co_list[i] = NULL;
+      break;
+    }
+  }
 }
 
 static void co_entry_wrapper(void *co) {
@@ -69,35 +80,62 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   co->status = CO_NEW;
   co->waiter = NULL;
 
-  co_list[cur_co_count++] = co;
+  for (int i = 0; i < MAX_CO_NUM; ++ i) {
+    if (co_list[i] == NULL) {
+      co_list[i] = co;
+      break;
+    }
+  }
   return co;
 }
 
 void co_wait(struct co *co) {
+  if (co->status == CO_DEAD) {
+    remove_co_from_list(co);
+    free(co);
+    return;
+  }
+
   current_co->status = CO_WAITING;
+  co->waiter = current_co;
 
   while (co->status != CO_DEAD) {
     co_yield();
   }
+
+  // the waited co is finished
+  remove_co_from_list(co);
   free(co);
 }
 
 void co_yield() {
   // a thread yield, we need to immediately save the register context
   int val = setjmp(current_co->context);
+  static int last_pos = 0;
   if (val == 0) { /* this branch indicates that we just save the context */
     // complete register save, select next co to run
-    for (int i = 0; i < MAX_CO_NUM; ++ i) {
-      struct co* co = co_list[i];
-      // selectable co status are NEW and RUNNING
-      if (co->status == CO_NEW) {
-        current_co = co;
-        current_co->status = CO_RUNNING;
-        stack_switch_call((void *)co->stack, co_entry_wrapper, (uintptr_t)co);
+    for (int i = 1; i <= MAX_CO_NUM; ++ i) {
+      int idx = (last_pos + i) % MAX_CO_NUM;
+      struct co* co = co_list[idx];
+      if (co != NULL) {
+        // selectable co status are NEW, RUNNING and WAITING
+        if (co->status == CO_NEW) {
+          last_pos = i;
+          current_co = co;
+          current_co->status = CO_RUNNING;
+
+          uintptr_t stack_top = (uintptr_t)co->stack + STACK_SIZE;
+          stack_top &= -16L;
+          stack_switch_call((void *)stack_top, co_entry_wrapper, (uintptr_t)co);
+        }
+        if (co->status == CO_RUNNING) {
+          last_pos = i;
+          current_co = co;
+          longjmp(co->context, 1);
+        }
       }
-      if (co->status == CO_RUNNING) {
-        current_co = co;
-        longjmp(co->context, 1);
+      else {
+        continue;
       }
     }
   } else { /* this branch indicates that we decided to restore a RUNNING co's context */
@@ -114,6 +152,6 @@ __attribute__((constructor)) void init_main() {
   main->status = CO_RUNNING;
   main->waiter = NULL;
 
-  co_list[cur_co_count++] = main;
+  co_list[0] = main;
   current_co = main;
 }
