@@ -38,8 +38,9 @@ void *malloc(size_t size) {
 	static char *addr = NULL;
 
 	if (addr == NULL)  addr = (char *) (heap.start);
-
-	void *next_addr = (void *) ROUNDUP(addr, 4);
+  // we align to the size of pointer of current arch, 4 bytes for x86 and 8 bytes for x86_64
+  int align_size = sizeof(void *);
+	void *next_addr = (void *) ROUNDUP(addr, align_size);
 
 	if ((char *) next_addr + size > (char *) heap.end) {
 		panic("No more space can be allocated on heap");

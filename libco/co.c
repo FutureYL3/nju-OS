@@ -3,8 +3,11 @@
 #include <setjmp.h>
 #include <stdint.h>
 
+/* Check whether understand this mini lab: draw the state transition graph */
+
 static inline void stack_switch_call(void *sp, void *entry, uintptr_t arg) {
 #if __x86_64__
+  // satisfy memory alignment requirement of x86_64
   void *new_sp = (void *)((uintptr_t)sp - 8);
 #endif
   asm volatile (
@@ -125,6 +128,7 @@ void co_yield() {
           current_co->status = CO_RUNNING;
 
           uintptr_t stack_top = (uintptr_t)co->stack + STACK_SIZE;
+          // align stack top to 16 bytes
           stack_top &= -16L;
           stack_switch_call((void *)stack_top, co_entry_wrapper, (uintptr_t)co);
         }
